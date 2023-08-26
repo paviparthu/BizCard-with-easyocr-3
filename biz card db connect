@@ -1,0 +1,48 @@
+import mysql.connector
+from mysql.connector import errorcode
+from sqlalchemy import create_engine
+import pandas as pd
+import sqlalchemy
+
+# Connect to the MySQL server
+try:
+    connect = mysql.connector.connect(
+        host="localhost",
+        user="root",
+        password="root",
+        auth_plugin='mysql_native_password'
+    )
+except mysql.connector.Error as err:
+    if err.errno == errorcode.ER_ACCESS_DENIED_ERROR:
+        print("Error: Access denied. Check your username and password.")
+    elif err.errno == errorcode.ER_BAD_DB_ERROR:
+        print("Error: Database does not exist.")
+    else:
+        print(f"Error: {err}")
+
+# Create a new database and use it
+try:
+    mycursor = connect.cursor()
+    mycursor.execute("CREATE DATABASE IF NOT EXISTS bizcard_db")
+    mycursor.close()
+    connect.database = "bizcard_db"
+except mysql.connector.Error as err:
+    print(f"Error: {err}")
+
+# Connect to the newly created database
+engine = create_engine('mysql+mysqlconnector://root:root@localhost/bizcard_db', echo=False)
+
+# Use pandas to insert the DataFrame data into the SQL Database table
+data_df.to_sql('bizcardx_data', engine, if_exists='append', index=False, dtype={
+    "Company_name": sqlalchemy.types.VARCHAR(length=225),
+    "Card_holder": sqlalchemy.types.VARCHAR(length=225),
+    "Designation": sqlalchemy.types.VARCHAR(length=225),
+    "Mobile_number": sqlalchemy.types.String(length=50),  # Increase the length
+    "Email": sqlalchemy.types.TEXT,
+    "Website": sqlalchemy.types.TEXT,
+    "Area": sqlalchemy.types.VARCHAR(length=225),
+    "City": sqlalchemy.types.VARCHAR(length=225),
+    "State": sqlalchemy.types.VARCHAR(length=225),
+    "Pin_code": sqlalchemy.types.String(length=10)
+})
+
